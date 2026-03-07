@@ -109,8 +109,11 @@ export default async function BlogPage({ params }: PageProps) {
         </a>
       </div>
 
-      {/* Header - only date and reading time, title is in markdown content */}
+      {/* Header - show title, date and reading time */}
       <header className="mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-zinc-100 mb-4 leading-tight">
+          {blog.title}
+        </h1>
         <div className="flex items-center gap-3">
           <time
             dateTime={blog.date.toISOString()}
