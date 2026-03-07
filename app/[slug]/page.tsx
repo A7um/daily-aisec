@@ -9,10 +9,12 @@ interface PageProps {
 function renderMarkdown(content: string): string {
   let html = content;
 
+  // Remove the first h1 title (it's shown in the page header)
+  html = html.replace(/^#\s+.+\n/, '');
+
   // Headers
   html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
 
   // Bold
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -70,8 +72,11 @@ export async function generateMetadata({ params }: PageProps) {
     return { title: 'Not Found' };
   }
 
+  // Format: "AI安全每日观察 | 2026-03-05 主要话题"
+  const dateStr = blog.date.toISOString().split('T')[0];
+  const mainTopic = blog.title.replace(/^AI\s*安全每日观察[：:]\s*/, '').replace(/^每日观察[：:]\s*/, '');
   return {
-    title: blog.title,
+    title: `AI安全每日观察 | ${dateStr} ${mainTopic}`,
   };
 }
 
@@ -104,9 +109,9 @@ export default async function BlogPage({ params }: PageProps) {
         </a>
       </div>
 
-      {/* Header */}
-      <header className="mb-10">
-        <div className="flex items-center gap-3 mb-4">
+      {/* Header - only date and reading time, title is in markdown content */}
+      <header className="mb-8">
+        <div className="flex items-center gap-3">
           <time
             dateTime={blog.date.toISOString()}
             className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
@@ -117,14 +122,6 @@ export default async function BlogPage({ params }: PageProps) {
             {blog.readingTime} 分钟阅读
           </span>
         </div>
-
-        <h1 className="text-3xl sm:text-4xl font-bold text-zinc-100 leading-tight mb-4">
-          {blog.title}
-        </h1>
-
-        <p className="text-lg text-zinc-400 leading-relaxed">
-          {blog.excerpt}
-        </p>
       </header>
 
       {/* Content */}
