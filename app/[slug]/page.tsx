@@ -27,7 +27,7 @@ function renderMarkdown(content: string): string {
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
   // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 
   // Horizontal rules
   html = html.replace(/^---$/gm, '<hr />');
@@ -38,6 +38,9 @@ function renderMarkdown(content: string): string {
 
   // Ordered lists
   html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+  // Blockquotes
+  html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
 
   // Paragraphs
   html = html.split('\n\n').map(block => {
@@ -81,35 +84,116 @@ export default async function BlogPage({ params }: PageProps) {
     notFound();
   }
 
+  // Find adjacent posts
+  const currentIndex = blogs.findIndex((b) => b.slug === slug);
+  const prevPost = currentIndex < blogs.length - 1 ? blogs[currentIndex + 1] : null;
+  const nextPost = currentIndex > 0 ? blogs[currentIndex - 1] : null;
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
+    <article className="max-w-3xl mx-auto">
+      {/* Back link */}
+      <div className="mb-8">
         <a
           href="/"
-          className="font-mono text-xs text-[#888888] hover:text-[#22c55e] transition-colors inline-flex items-center gap-1"
+          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-emerald-400 transition-colors group"
         >
-          <span>←</span>
-          <span>back to index</span>
+          <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>返回列表</span>
         </a>
       </div>
 
-      <div className="mb-6 pb-4 border-b border-[#2a2a2a]">
-        <div className="flex items-center gap-3 flex-wrap">
-          <time dateTime={blog.date.toISOString()} className="font-mono text-xs text-[#22c55e]">
-            [{formatRelativeDate(blog.date)}]
+      {/* Header */}
+      <header className="mb-10">
+        <div className="flex items-center gap-3 mb-4">
+          <time
+            dateTime={blog.date.toISOString()}
+            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+          >
+            {formatRelativeDate(blog.date)}
           </time>
-          <span className="font-mono text-xs text-[#888888] bg-[#111111] px-2 py-0.5 rounded border border-[#2a2a2a]">
-            {blog.readingTime} min read
+          <span className="text-xs text-zinc-500">
+            {blog.readingTime} 分钟阅读
           </span>
         </div>
-      </div>
 
-      <article>
-        <div
-          className="prose prose-terminal max-w-none prose-headings:font-mono prose-headings:text-[#f3f4f6] prose-headings:font-bold prose-h1:text-2xl prose-h1:mb-4 prose-h1:border-b prose-h1:border-[#2a2a2a] prose-h1:pb-3 prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3 prose-p:text-[#d1d5db] prose-p:leading-relaxed prose-p:mb-4 prose-a:text-[#22c55e] prose-a:no-underline hover:prose-a:underline hover:prose-a:text-[#4ade80] prose-strong:text-[#f9fafb] prose-strong:font-semibold prose-em:text-[#d1d5db] prose-code:text-[#22c55e] prose-code:bg-[#0d1117] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-pre:bg-[#0d1117] prose-pre:border prose-pre:border-[#2a2a2a] prose-pre:rounded-lg prose-pre:p-4 prose-pre:overflow-auto prose-ul:list-disc prose-ul:pl-6 prose-ul:mb-4 prose-ol:list-decimal prose-ol:pl-6 prose-ol:mb-4 prose-li:text-[#d1d5db] prose-li:mb-1 prose-blockquote:border-l-4 prose-blockquote:border-[#22c55e] prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-[#9ca3af] prose-blockquote:bg-[#111111] prose-blockquote:py-1 prose-blockquote:rounded-r prose-hr:border-[#2a2a2a] prose-table:text-sm prose-thead:border-b prose-thead:border-[#374151] prose-th:text-[#f3f4f6] prose-th:font-mono prose-th:font-semibold prose-th:py-2 prose-th:px-3 prose-td:text-[#d1d5db] prose-td:py-2 prose-td:px-3 prose-td:border-b prose-td:border-[#1f2937] prose-img:rounded-lg prose-img:border prose-img:border-[#2a2a2a]"
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(blog.content) }}
-        />
-      </article>
-    </div>
+        <h1 className="text-3xl sm:text-4xl font-bold text-zinc-100 leading-tight mb-4">
+          {blog.title}
+        </h1>
+
+        <p className="text-lg text-zinc-400 leading-relaxed">
+          {blog.excerpt}
+        </p>
+      </header>
+
+      {/* Content */}
+      <div
+        className="prose-dark"
+        dangerouslySetInnerHTML={{ __html: renderMarkdown(blog.content) }}
+      />
+
+      {/* Navigation */}
+      <nav className="mt-12 pt-8 border-t border-zinc-800">
+        <div className="grid grid-cols-2 gap-4">
+          {prevPost ? (
+            <a
+              href={`/${prevPost.slug}`}
+              className="group p-4 rounded-lg bg-zinc-900/30 border border-zinc-800/50 hover:border-emerald-500/30 transition-colors"
+            >
+              <div className="text-xs text-zinc-500 mb-1 flex items-center gap-1">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                上一篇
+              </div>
+              <div className="text-sm text-zinc-300 group-hover:text-emerald-400 transition-colors line-clamp-1">
+                {prevPost.title}
+              </div>
+            </a>
+          ) : (
+            <div />
+          )}
+
+          {nextPost ? (
+            <a
+              href={`/${nextPost.slug}`}
+              className="group p-4 rounded-lg bg-zinc-900/30 border border-zinc-800/50 hover:border-emerald-500/30 transition-colors text-right"
+            >
+              <div className="text-xs text-zinc-500 mb-1 flex items-center gap-1 justify-end">
+                下一篇
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              <div className="text-sm text-zinc-300 group-hover:text-emerald-400 transition-colors line-clamp-1">
+                {nextPost.title}
+              </div>
+            </a>
+          ) : (
+            <div />
+          )}
+        </div>
+      </nav>
+
+      {/* Footer note */}
+      <div className="mt-12 p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+            <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="text-sm text-zinc-400">
+            <span className="text-zinc-300">本文由 </span>
+            <span className="text-emerald-400 font-medium">Atum&apos;s Openclaw</span>
+            <span className="text-zinc-300"> AI 系统自动生成，内容未经人工审核。个人博客请访问 </span>
+            <a href="https://atum.li" className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">
+              atum.li
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }

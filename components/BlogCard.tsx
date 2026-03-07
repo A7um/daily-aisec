@@ -3,34 +3,71 @@ import { formatRelativeDate } from '@/lib/utils/dateUtils';
 
 interface BlogCardProps {
   blog: Blog;
+  index: number;
 }
 
-export default function BlogCard({ blog }: BlogCardProps) {
+export default function BlogCard({ blog, index }: BlogCardProps) {
+  // Alternate tag colors for visual variety
+  const tagStyles = [
+    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  ];
+  const tagStyle = tagStyles[index % tagStyles.length];
+
   return (
     <a
       href={`/${blog.slug}`}
-      className="block p-4 bg-[#111111] border border-[#2a2a2a] rounded hover:border-[#22c55e] hover:shadow-[0_0_12px_rgba(34,197,94,0.1)] transition-all duration-200 group"
+      className="group block p-5 rounded-xl bg-zinc-900/30 border border-zinc-800/50 hover:border-emerald-500/30 hover:bg-zinc-900/50 transition-all duration-300"
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start gap-4">
+        {/* Date indicator */}
+        <div className="hidden sm:flex flex-col items-center justify-center w-14 h-14 rounded-lg bg-zinc-800/50 border border-zinc-700/50 group-hover:border-emerald-500/30 group-hover:bg-emerald-500/5 transition-colors flex-shrink-0">
+          <span className="text-xs text-zinc-500 font-mono uppercase">
+            {blog.date.toLocaleDateString('zh-CN', { month: 'short' })}
+          </span>
+          <span className="text-lg font-bold text-zinc-300 group-hover:text-emerald-400 transition-colors">
+            {blog.date.getDate()}
+          </span>
+        </div>
+
+        {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-2">
-            <time dateTime={blog.date.toISOString()} className="font-mono text-xs text-[#22c55e]">
-              [{formatRelativeDate(blog.date)}]
+          {/* Meta */}
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <time
+              dateTime={blog.date.toISOString()}
+              className="sm:hidden font-mono text-xs text-emerald-400"
+            >
+              {formatRelativeDate(blog.date)}
             </time>
-            <span className="font-mono text-xs text-[#888888] bg-[#1a1a1a] px-2 py-0.5 rounded border border-[#2a2a2a]">
-              {blog.readingTime} min
+            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${tagStyle}`}>
+              {blog.readingTime} 分钟阅读
             </span>
           </div>
-          <h3 className="font-mono text-sm font-semibold text-[#e5e5e5] group-hover:text-[#22c55e] transition-colors mb-1 leading-snug">
+
+          {/* Title */}
+          <h3 className="text-base font-semibold text-zinc-100 group-hover:text-emerald-400 transition-colors mb-2 leading-snug line-clamp-2">
             {blog.title}
           </h3>
-          <p className="text-[#888888] text-xs line-clamp-2 leading-relaxed">
+
+          {/* Excerpt */}
+          <p className="text-sm text-zinc-500 line-clamp-2 leading-relaxed">
             {blog.excerpt}
           </p>
         </div>
-        <span className="font-mono text-[#2a2a2a] group-hover:text-[#22c55e] transition-colors text-sm mt-1 flex-shrink-0">
-          ›
-        </span>
+
+        {/* Arrow */}
+        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-800/50 border border-zinc-700/50 group-hover:border-emerald-500/30 group-hover:bg-emerald-500/10 transition-all flex-shrink-0">
+          <svg
+            className="w-4 h-4 text-zinc-600 group-hover:text-emerald-400 transition-colors"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
       </div>
     </a>
   );
