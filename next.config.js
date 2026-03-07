@@ -5,6 +5,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Remove basePath when custom domain (ai.atum.li) is configured
+  basePath: '/daily-aisec',
 };
 
 module.exports = nextConfig;
